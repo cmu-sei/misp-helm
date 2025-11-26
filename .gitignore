@@ -1,0 +1,29 @@
+# Helm chart build output
+charts/
+Chart.lock
+*.tgz
+
+# Test output (e.g., helm-unittest snapshots or debug files)
+.unittest/
+
+# Helm-related local config
+.values.yaml
+secrets.yaml
+.env
+.envrc
+
+# Editor/IDE files
+*.swp
+*.swo
+.idea/
+.vscode/
+*.bak
+*.tmp
+*.log
+
+# OS-specific
+.DS_Store
+Thumbs.db
+
+# Ignore Kubernetes generated manifests (if used for local testing)
+rendered.yaml

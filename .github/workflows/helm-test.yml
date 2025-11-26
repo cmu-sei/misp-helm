@@ -1,0 +1,73 @@
+name: Lint and Test Charts
+
+on: [push,pull_request]
+
+jobs:
+  lint-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup base software
+        uses: ./.github/actions/setup
+
+      - name: Set up chart-testing
+        uses: helm/chart-testing-action@v2.8.0
+
+      - name: Run chart-testing for misp (lint)
+        run: ct lint --charts ./
+
+  helm-unittest:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup base software
+        uses: ./.github/actions/setup
+
+      - name: Setup helm unittest
+        run: helm plugin install https://github.com/helm-unittest/helm-unittest.git
+
+      - name: Run helm unittest
+        run: helm unittest ./
+
+  checkov-job:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v5
+
+      - name: Setup base software
+        uses: ./.github/actions/setup
+
+      - name: Fetch chart dependencies
+        run: helm dependency update ./
+
+      - name: Run Checkov action
+        id: checkov
+        uses: bridgecrewio/checkov-action@master
+        with:
+          directory: .
+          framework: helm
+          output_format: cli,sarif
+          output_file_path: results.sarif
+
+  chart-testing:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup base software
+        uses: ./.github/actions/setup
+
+      - name: Set up chart-testing
+        uses: helm/chart-testing-action@v2.8.0
+
+      - name: Create kind cluster
+        uses: helm/kind-action@v1.12.0
+
+      - name: Run chart-testing (install)
+        run: ct install --namespace misp     

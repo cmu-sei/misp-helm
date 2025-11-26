@@ -1,0 +1,17 @@
+directory:
+  - .
+skip-check: 
+  - CKV_GITLABCI*
+  - CKV_GHA*
+  - CKV2_GHA*
+  - CKV_K8S_21
+  - CKV_K8S_14
+  - CKV_K8S_43
+  - CKV_K8S_40
+  - CKV_K8S_37
+  - CKV_K8S_29
+  - CKV_K8S_22
+  - CKV_K8S_23
+  - CKV_K8S_38
+  - CKV_K8S_35
+  - CKV2_K8S_6

@@ -1,0 +1,71 @@
+# Copyright 2025 Carnegie Mellon University.
+# NO WARRANTY. THIS CARNEGIE MELLON UNIVERSITY AND SOFTWARE ENGINEERING INSTITUTE MATERIAL IS FURNISHED ON AN "AS-IS" BASIS. 
+# CARNEGIE MELLON UNIVERSITY MAKES NO WARRANTIES OF ANY KIND, EITHER EXPRESSED OR IMPLIED, AS TO ANY MATTER INCLUDING, 
+# BUT NOT LIMITED TO, WARRANTY OF FITNESS FOR PURPOSE OR MERCHANTABILITY, EXCLUSIVITY, OR RESULTS OBTAINED FROM USE OF THE 
+# MATERIAL. CARNEGIE MELLON #UNIVERSITY DOES NOT MAKE ANY WARRANTY OF ANY KIND WITH RESPECT TO FREEDOM FROM PATENT, TRADEMARK, OR 
+# COPYRIGHT INFRINGEMENT.
+# Licensed under an Apache License v2.0-style license, please see license.txt or contact permission@sei.cmu.edu for full terms.
+# [DISTRIBUTION STATEMENT A] This material has been approved for public release and unlimited distribution.  
+# Please see Copyright #notice for non-US Government use and distribution.
+# This Software includes and/or makes use of Third-Party Software each subject to its own license.
+# DM25-1432
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: misp-redis
+  labels:
+    app: redis
+  {{- include "misp-charts.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.redis.replicas }}
+  selector:
+    matchLabels:
+      app: redis
+    {{- include "misp-charts.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        app: redis
+      {{- include "misp-charts.selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+      - env:
+        - name: KUBERNETES_CLUSTER_DOMAIN
+          value: {{ quote .Values.kubernetesClusterDomain }}
+        image: {{- if not .Values.redis.mispRedis.image.digest }}
+          {{ .Values.redis.mispRedis.image.repository }}:{{ .Values.redis.mispRedis.image.tag 
+          | default .Chart.AppVersion }}
+          {{- else }}
+          {{ .Values.redis.mispRedis.image.repository }}@{{ .Values.redis.mispRedis.image.digest }}
+          {{- end }}
+        command: ["valkey-server"]
+        args: [{{ .Values.redis.mispRedis.args }}]
+        name: misp-redis
+        resources: {{- toYaml .Values.redis.mispRedis.resources | nindent 10 }}
+        securityContext: {{- toYaml .Values.redis.mispRedis.containerSecurityContext
+          | nindent 10 }}
+        livenessProbe: {{- toYaml .Values.redis.mispRedis.containerLivenessProbe | nindent 10 }}
+        readinessProbe: {{- toYaml .Values.redis.mispRedis.containerReadinessProbe | nindent 10 }}
+        imagePullPolicy: {{ .Values.redis.mispRedis.imagePullPolicy }}
+        volumeMounts:
+        - mountPath: /data
+          name: redis-data
+      restartPolicy: Always
+      volumes:
+      - name: redis-data
+        persistentVolumeClaim:
+          claimName: {{ include "misp-charts.fullname" . }}-redis-data
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.env.redisHost }}
+  labels:
+  {{- include "misp-charts.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.redis.type }}
+  selector:
+    app: redis
+  {{- include "misp-charts.selectorLabels" . | nindent 4 }}
+  ports:
+	{{- .Values.redis.ports | toYaml | nindent 2 }}

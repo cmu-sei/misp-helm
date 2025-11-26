@@ -1,0 +1,251 @@
+# Copyright 2025 Carnegie Mellon University.
+# NO WARRANTY. THIS CARNEGIE MELLON UNIVERSITY AND SOFTWARE ENGINEERING INSTITUTE MATERIAL IS FURNISHED ON AN "AS-IS" BASIS.
+# CARNEGIE MELLON UNIVERSITY MAKES NO WARRANTIES OF ANY KIND, EITHER EXPRESSED OR IMPLIED, AS TO ANY MATTER INCLUDING,
+# BUT NOT LIMITED TO, WARRANTY OF FITNESS FOR PURPOSE OR MERCHANTABILITY, EXCLUSIVITY, OR RESULTS OBTAINED FROM USE OF THE
+# MATERIAL. CARNEGIE MELLON #UNIVERSITY DOES NOT MAKE ANY WARRANTY OF ANY KIND WITH RESPECT TO FREEDOM FROM PATENT, TRADEMARK, OR
+# COPYRIGHT INFRINGEMENT.
+# Licensed under an Apache License v2.0-style license, please see license.txt or contact permission@sei.cmu.edu for full terms.
+# [DISTRIBUTION STATEMENT A] This material has been approved for public release and unlimited distribution.
+# Please see Copyright #notice for non-US Government use and distribution.
+# This Software includes and/or makes use of Third-Party Software each subject to its own license.
+# DM25-1432
+instanceEnv:
+  # -- If you are exposing MISP on a non-standard port (i.e., the port is part of the URL you would use to access it, e.g., https://192.168.0.1:4433) you need to include the port in the variable
+  mispBaseurl: http://localhost:80   # This is the value you need to modify if you are experiencing issues with redirects when port-forwarding a pod
+  mispUuid: 8370cb21-4e96-48d4-b43a-c14b97022f7e
+  ingressHostName: localhost
+env:
+  # -- Email used for notifications.
+  mispEmail: info@sei.cmu.edu
+  # -- The URL to connect to the misp-modules service.
+  mispModuleUrl: http://misp-modules
+  mispDebug: "no"
+  # -- The MySQL database to use.
+  mysqlDatabase: misp
+  # -- The hostname of the MySQL database service.
+  mysqlHost: mariadb
+  # -- The client secret based OAuth client authentication method.
+  oidcAuthenticationMethod: client_secret_jwt
+  oidcCheckUserValidity: "600"
+  oidcClientCryptoPass: LKJHsfd798LKDHSFkljSF*_7lkjhDF&*&JKHSF87FSKLJh@
+  oidcCodeChallengeMethod: S256
+  # -- Whether to enable OIDC authentication, according to https://github.com/MISP/MISP/blob/2.4/app/Plugin/OidcAuth/README.md
+  oidcEnable: false
+  oidcOfflineAccess: "yes"
+  # -- The location of the OIDC password reset form.
+  oidcPasswordReset: https://sso.myorg.org/reset
+  # -- The location of the OIDC provider.
+  oidcProviderUrl: https://sso.myorg.org/realms/Fusion
+  oidcRolesProperty: "roles"
+  # -- If user has multiple roles from OIDC provider, the first role that matches will be assigned to the user.
+  oidcRolesMapping: '{"misp-admin": "1","misp-org-admin": "2","misp-sync-user":
+    "5","misp-publisher": "4","misp-api-user": "User with API access","misp-user":
+    "3"}'
+  # -- The default organization.
+  oidcDefaultOrg: CERT
+  # -- The location of the OIDC logout URL.
+  oidcLogoutUrl: ""
+  # -- The location for adding custom scopes.
+  oidcScopes: ""
+  # -- The hostname of the redis service.
+  redisHost: redis
+  # -- The port for the redis service.
+  redisPort: 6379
+  # -- The password for the redis service.
+  redisPassword: redispassword    # checkov:skip=CKV_SECRET_6:Ignore default redis PW as it should be overwritten by users
+  securitySalt: E038741A-3646-4525-BFC9-77500D25F1F6
+  zeromqEnabled: "yes"
+  disableSSLRedirect: "true"
+kubernetesClusterDomain: cluster.local
+misp:
+  misp:
+    containerSecurityContext:
+      allowPrivilegeEscalation: false
+      seccompProfile:
+        type: RuntimeDefault
+      capabilities:
+        drop:
+        - NET_RAW
+        - SYS_CHROOT
+        - MKNOD
+        - SETFCAP
+    image:
+      repository: ghcr.io/misp/misp-docker/misp-core
+      tag: latest
+      digest: ""
+    resources:
+      limits:
+        cpu: "0.5"
+        memory: 1Gi
+    containerStartupProbe:
+      httpGet:
+        path: /users/heartbeat
+        port: 80
+      initialDelaySeconds: 10
+      periodSeconds: 10
+      failureThreshold: 90
+      timeoutSeconds: 5
+    containerLivenessProbe:
+      httpGet:
+        path: /users/heartbeat
+        port: 80
+      periodSeconds: 20
+      failureThreshold: 5
+    containerReadinessProbe:
+      httpGet:
+        path: /users/heartbeat
+        port: 80
+      periodSeconds: 10
+      failureThreshold: 3
+    imagePullPolicy: Always
+  ports:
+  - name: misp
+    port: 80
+    targetPort: 80
+    protocol: TCP
+  replicas: 1
+  type: ClusterIP
+  ingressClassName: nginx
+  tlsAnnotation: ""
+
+modules:
+  mispModules:
+    containerSecurityContext:
+      allowPrivilegeEscalation: false
+      seccompProfile:
+        type: RuntimeDefault
+      runAsUser: 10001
+      capabilities:
+        drop:
+        - NET_RAW
+        - SYS_CHROOT
+        - MKNOD
+        - NET_BIND_SERVICE
+        - AUDIT_WRITE
+        - SETFCAP
+    image:
+      repository: ghcr.io/misp/misp-docker/misp-modules
+      tag: latest
+      digest: ""
+    resources:
+      limits:
+        cpu: "0.5"
+        memory: 1Gi
+    containerLivenessProbe:
+      tcpSocket:
+        port: 6666
+      periodSeconds: 20
+      failureThreshold: 5
+    containerReadinessProbe:
+      tcpSocket:
+        port: 6666
+      periodSeconds: 10
+      failureThreshold: 3
+    imagePullPolicy: Always
+  ports:
+  - name: misp-modules
+    port: 6666
+    targetPort: 6666
+  replicas: 1
+  type: ClusterIP
+modulesEnv:
+  redisBackend: redis
+  redisPort: 6379
+# -- Whether to handle k8s secrets with helm chart.
+setk8sSecrets: false
+# -- MySQL default credentials. Only used if setk8sSecrets is set to true.
+mysqlCredentials:
+  username: "^M1SP+User$"
+  password: "misp"
+# -- OIDC default credentials. Only used if setk8sSecrets is set to true.
+oidcCredentials:
+  username: "test"
+  password: "test"
+# -- Admin user API key. Only used if setAPIKey & setk8sSecrets is set to true.
+apiKeyCredentials:
+  key: "kzcuoh9tujovgbgcjrgbyaop8msodti4p9vjxyhp"
+# -- Kubernetes Secret Name for MySQL admin credentials. Secret has to contain `username` and `password` literals.
+mysqlCredentialsSecretName: "mysql-credentials"
+# -- Kubernetes Secret Name for OIDC credentials. Secret has to contain `username` and `password` literals.
+oidcCredentialsSecretName: "oidc-credentials"
+# -- Whether to handle setting the MISP admin API key automatically.
+setAPIKey: true
+# -- Kubernetes Secret Name for MISP admin user api key.
+apiKeySecretValue: "misp-api-key"   # checkov:skip=CKV_SECRET_6:Checkov false positive, this references a secret object
+pvc:
+  attachments:
+    storageClass: ""
+    storageRequest: 1Gi
+  redisData:
+    storageClass: ""
+    storageRequest: 1Gi
+redis:
+  mispRedis:
+    containerSecurityContext:
+      allowPrivilegeEscalation: false
+      seccompProfile:
+        type: RuntimeDefault
+      runAsUser: 10001
+      capabilities:
+        drop:
+        - NET_RAW
+    image:
+      repository: valkey/valkey
+      tag: "7.2"
+      digest: ""
+    args: "--requirepass redispassword"
+    resources:
+      limits:
+        cpu: "0.5"
+        memory: 1Gi
+    containerLivenessProbe:
+      tcpSocket:
+        port: 6379
+      periodSeconds: 30
+      failureThreshold: 10
+    containerReadinessProbe:
+      tcpSocket:
+        port: 6379
+      periodSeconds: 20
+      failureThreshold: 5
+    imagePullPolicy: Always
+  ports:
+  - name: redis
+    port: 6379
+    targetPort: 6379
+  replicas: 1
+  type: ClusterIP
+tls:
+  # -- Whether to have the helm chart handle TLS settings for the ingress.
+  useTLS: false
+  tlsSecretName: "squirrel"
+mariadb:
+  # -- Whether to have the helm chart handle deploying a MySQL database. Disabled by default.
+  enabled: false
+  fullnameOverride: "mariadb"
+  image:
+    repository: bitnamilegacy/mariadb
+    tag: latest
+  volumePermissions:
+    enabled: true
+    image:
+      repository: bitnamilegacy/os-shell
+  auth:
+    database: "misp"
+    username: "^M1SP+User$"
+    password: "misp"
+    rootPassword: "misp"
+
+smtp:
+  # -- Whether to have the helm chart handle deploying the optional mail forwarding container.
+  enabled: false
+  config:
+  # See documentation at https://github.com/ix-ai/smtp#readme
+  # SMARTHOST_ADDRESS: mail.example.com
+  # SMARTHOST_PORT: "587"
+  # SMARTHOST_USER: myuser
+  # SMARTHOST_PASSWORD: secret
+  # SMARTHOST_ALIASES: "*.example.com"
+
+  # colon separated, must start with : !
+  RELAY_NETWORKS: :10.42.0.0/17
