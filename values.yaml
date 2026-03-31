@@ -249,3 +249,14 @@ smtp:
 
   # colon separated, must start with : !
   RELAY_NETWORKS: :10.42.0.0/17
+
+workloadIdentity:
+  # -- Whether to have the helm chart handle setting the Service Account for use with Azure AD workload Identity. Disabled by default.
+  enabled: false
+  serviceAccountName: ""
+
+secretsStore:
+# -- Whether to have the helm chart handle settings for use with the Secrets Store CSI driver. Disabled by default.
+  enabled: false
+  secretProviderClassName: ""
+  mountPath: "/mnt/secrets-store"

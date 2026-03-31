@@ -36,7 +36,7 @@ MISP is an open source software solution for collecting, storing, distributing a
 
 | Repository | Name | Version |
 |------------|------|---------|
-| https://charts.ntppool.org/ | smtp | 2.1.1 |
+| https://charts.ntppool.org/ | smtp | 2.4.0 |
 | oci://registry-1.docker.io/bitnamicharts | mariadb | 19.0.5 |
 
 ## Values
@@ -175,6 +175,9 @@ MISP is an open source software solution for collecting, storing, distributing a
 | redis.ports[0].targetPort | int | `6379` |  |
 | redis.replicas | int | `1` |  |
 | redis.type | string | `"ClusterIP"` |  |
+| secretsStore.enabled | bool | `false` | Whether to have the helm chart handle settings for use with the Secrets Store CSI driver. Disabled by default. |
+| secretsStore.mountPath | string | `"/mnt/secrets-store"` |  |
+| secretsStore.secretProviderClassName | string | `""` |  |
 | setAPIKey | bool | `true` | Whether to handle setting the MISP admin API key automatically. |
 | setk8sSecrets | bool | `false` | Whether to handle k8s secrets with helm chart. |
 | smtp.RELAY_NETWORKS | string | `":10.42.0.0/17"` |  |
@@ -182,4 +185,6 @@ MISP is an open source software solution for collecting, storing, distributing a
 | smtp.enabled | bool | `false` | Whether to have the helm chart handle deploying the optional mail forwarding container. |
 | tls.tlsSecretName | string | `"squirrel"` |  |
 | tls.useTLS | bool | `false` | Whether to have the helm chart handle TLS settings for the ingress. |
+| workloadIdentity.enabled | bool | `false` | Whether to have the helm chart handle setting the Service Account for use with Azure AD workload Identity. Disabled by default. |
+| workloadIdentity.serviceAccountName | string | `""` |  |
 

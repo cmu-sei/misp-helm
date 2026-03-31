@@ -28,6 +28,9 @@ spec:
         app: misp
       {{- include "misp-charts.selectorLabels" . | nindent 8 }}
     spec:
+      {{- if and .Values.workloadIdentity .Values.workloadIdentity.enabled }}
+      serviceAccountName: {{ .Values.workloadIdentity.serviceAccountName | quote }}
+      {{- end }}
       containers:
       - env:
         - name: MYSQL_USER
@@ -87,17 +90,30 @@ spec:
           mountPath: /custom/files/customize_misp.sh
           subPath: customize_misp.sh
       {{- end}}
+      {{- if and .Values.secretsStore .Values.secretsStore.enabled }}
+        - name: secrets-store-inline
+          mountPath: {{ default "/mnt/secrets-store" .Values.secretsStore.mountPath | quote }}
+          readOnly: true
+      {{- end }}
       restartPolicy: Always
       volumes:
+      {{- if and .Values.secretsStore .Values.secretsStore.enabled }}
+      - name: secrets-store-inline
+        csi:
+          driver: secrets-store.csi.k8s.io
+          readOnly: true
+          volumeAttributes:
+            secretProviderClass: {{ .Values.secretsStore.secretProviderClassName | quote }}
+      {{- end }}
       - name: misp-attachments
         persistentVolumeClaim:
           claimName: {{ include "misp-charts.fullname" . }}-attachments
       - emptyDir:
           medium: Memory
         name: misp-tmpfs0
-    {{- if .Values.setAPIKey }}
+      {{- if .Values.setAPIKey }}
       - name: customize-misp
         configMap:
           name: {{ include "misp-charts.fullname" . }}-customize-misp
           defaultMode: 0777
-    {{- end}}
+      {{- end}}
