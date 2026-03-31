@@ -28,7 +28,7 @@ jobs:
         uses: ./.github/actions/setup
 
       - name: Setup helm unittest
-        run: helm plugin install https://github.com/helm-unittest/helm-unittest.git
+        run: helm plugin install https://github.com/helm-unittest/helm-unittest.git --version 1.0.2
 
       - name: Run helm unittest
         run: helm unittest ./
