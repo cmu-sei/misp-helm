@@ -28,6 +28,9 @@ spec:
         app: redis
       {{- include "misp-charts.selectorLabels" . | nindent 8 }}
     spec:
+      {{- if and .Values.workloadIdentity .Values.workloadIdentity.enabled }}
+      serviceAccountName: {{ .Values.workloadIdentity.serviceAccountName | quote }}
+      {{- end }}
       containers:
       - env:
         - name: KUBERNETES_CLUSTER_DOMAIN
@@ -50,11 +53,24 @@ spec:
         volumeMounts:
         - mountPath: /data
           name: redis-data
+        {{- if and .Values.secretsStore  .Values.secretsStore.enabled }}
+        - name: secrets-store-inline
+          mountPath: {{ .Values.secretsStore.mountPath | quote }}
+          readOnly: true
+        {{- end }}
       restartPolicy: Always
       volumes:
       - name: redis-data
         persistentVolumeClaim:
           claimName: {{ include "misp-charts.fullname" . }}-redis-data
+      {{- if and .Values.secretsStore .Values.secretsStore.enabled }}
+      - name: secrets-store-inline
+        csi:
+          driver: secrets-store.csi.k8s.io
+          readOnly: true
+          volumeAttributes:
+            secretProviderClass: {{ .Values.secretsStore.secretProviderClassName | quote }}
+      {{- end }}
 ---
 apiVersion: v1
 kind: Service

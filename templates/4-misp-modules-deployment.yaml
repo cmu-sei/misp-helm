@@ -28,6 +28,9 @@ spec:
         app: misp-modules
       {{- include "misp-charts.selectorLabels" . | nindent 8 }}
     spec:
+      {{- if and .Values.workloadIdentity .Values.workloadIdentity.enabled }}
+      serviceAccountName: {{ .Values.workloadIdentity.serviceAccountName | quote }}
+      {{- end }}
       containers:
       - env:
         - name: KUBERNETES_CLUSTER_DOMAIN
@@ -48,6 +51,21 @@ spec:
           | nindent 10 }}
         livenessProbe: {{- toYaml .Values.modules.mispModules.containerLivenessProbe | nindent 10 }}
         readinessProbe: {{- toYaml .Values.modules.mispModules.containerReadinessProbe | nindent 10 }}
+        {{- if and .Values.secretsStore .Values.secretsStore.enabled }}
+        volumeMounts:
+        - name: secrets-store-inline
+          mountPath: {{ .Values.secretsStore.mountPath | quote }}
+          readOnly: true
+        {{- end }}
+      {{- if and .Values.secretsStore .Values.secretsStore.enabled }}
+      volumes:
+      - name: secrets-store-inline
+        csi:
+          driver: secrets-store.csi.k8s.io
+          readOnly: true
+          volumeAttributes:
+            secretProviderClass: {{ .Values.secretsStore.secretProviderClassName | quote }}
+      {{- end }}
       restartPolicy: Always
 ---
 apiVersion: v1
