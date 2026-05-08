@@ -9,16 +9,16 @@
 # Please see Copyright #notice for non-US Government use and distribution.
 # This Software includes and/or makes use of Third-Party Software each subject to its own license.
 # DM25-1432
+{{- if .Values.misp.ingress.enabled }}
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: {{ include "misp-charts.fullname" . }}-ingress
   labels:
   {{- include "misp-charts.labels" . | nindent 4 }}
-  annotations:
-    {{ .Values.misp.tlsAnnotation }}
+  annotations: {{- toYaml .Values.misp.ingress.annotations | nindent 10 }}
 spec:
-  ingressClassName: {{ .Values.misp.ingressClassName | quote }}
+  ingressClassName: {{ .Values.misp.ingress.className | quote }}
   rules:
   - host: {{ .Values.instanceEnv.ingressHostName | quote }}
     http:
@@ -36,3 +36,4 @@ spec:
     - {{ .Values.instanceEnv.ingressHostName | quote }}
     secretName: "misp-tls-secret"
   {{- end }}
+{{- end }}
