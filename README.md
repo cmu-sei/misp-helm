@@ -83,7 +83,9 @@ MISP is an open source software solution for collecting, storing, distributing a
 | mariadb.image.tag | string | `"latest"` |  |
 | mariadb.volumePermissions.enabled | bool | `true` |  |
 | mariadb.volumePermissions.image.repository | string | `"bitnamilegacy/os-shell"` |  |
-| misp.ingressClassName | string | `"nginx"` |  |
+| misp.ingress.annotations | object | `{"kubernetes.io/ingress.class":"nginx"}` | Annotations for the ingress resource |
+| misp.ingress.className | string | `"nginx"` | Ingress Class name |
+| misp.ingress.enabled | bool | `true` | Whether to enable Kubernetes Ingress for external access |
 | misp.misp.containerLivenessProbe.failureThreshold | int | `5` |  |
 | misp.misp.containerLivenessProbe.httpGet.path | string | `"/users/heartbeat"` |  |
 | misp.misp.containerLivenessProbe.httpGet.port | int | `80` |  |
@@ -115,7 +117,6 @@ MISP is an open source software solution for collecting, storing, distributing a
 | misp.ports[0].protocol | string | `"TCP"` |  |
 | misp.ports[0].targetPort | int | `80` |  |
 | misp.replicas | int | `1` |  |
-| misp.tlsAnnotation | string | `""` |  |
 | misp.type | string | `"ClusterIP"` |  |
 | modules.mispModules.containerLivenessProbe.failureThreshold | int | `5` |  |
 | modules.mispModules.containerLivenessProbe.periodSeconds | int | `20` |  |

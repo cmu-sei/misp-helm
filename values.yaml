@@ -105,8 +105,14 @@ misp:
     protocol: TCP
   replicas: 1
   type: ClusterIP
-  ingressClassName: nginx
-  tlsAnnotation: ""
+  ingress:
+    # -- Whether to enable Kubernetes Ingress for external access
+    enabled: true
+    # -- Ingress Class name
+    className: nginx
+     # -- Annotations for the ingress resource
+    annotations:
+      kubernetes.io/ingress.class: "nginx"
 
 modules:
   mispModules:
