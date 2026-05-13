@@ -198,7 +198,7 @@ valkey:
     enabled: false
 
   ## See https://github.com/valkey-io/valkey-helm/tree/main/valkey#authentication
-  # -- Authentication is disabled by default. To enable, set auth.enabled: true
+  # -- Authentication is enabled by default. To disable, set auth.enabled: true
   auth:
     enabled: true
     aclUsers:
@@ -230,7 +230,7 @@ valkey:
     limits:
       cpu: "0.5"
       memory: 1Gi
-  # -- Whether to mount additonal volumes to the valkey container.
+  # -- Whether to add additonal volumes to the valkey container.
   extraVolumes: []
   # - name: secrets-store-inline
   #   csi:
@@ -238,6 +238,7 @@ valkey:
   #     readOnly: true
   #     volumeAttributes:
   #       secretProviderClass: example
+  # -- Whether to mount additonal volumes to the valkey container.
   extraVolumeMounts: []
   # - name: secrets-store-inline
   # mountPath: example
