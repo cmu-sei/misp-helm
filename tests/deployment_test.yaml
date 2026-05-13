@@ -11,7 +11,7 @@
 # DM25-1432
 suite: "MISP Deployment tests"
 templates:
-  - 5-misp-deployment.yaml
+  - deployment-misp.yaml
 tests:
   - it: "should set the correct number of replicas"
     asserts:

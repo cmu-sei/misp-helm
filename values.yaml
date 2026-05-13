@@ -48,11 +48,11 @@ env:
   # -- The location for adding custom scopes.
   oidcScopes: ""
   # -- The hostname of the redis service.
-  redisHost: redis
+  redisHost: valkey
   # -- The port for the redis service.
   redisPort: 6379
   # -- The password for the redis service.
-  redisPassword: redispassword    # checkov:skip=CKV_SECRET_6:Ignore default redis PW as it should be overwritten by users
+  redisPassword: "redispassword"    # checkov:skip=CKV_SECRET_6:Ignore default redis PW as it should be overwritten by users
   securitySalt: E038741A-3646-4525-BFC9-77500D25F1F6
   zeromqEnabled: "yes"
   disableSSLRedirect: "true"
@@ -155,7 +155,7 @@ modules:
   replicas: 1
   type: ClusterIP
 modulesEnv:
-  redisBackend: redis
+  redisBackend: valkey
   redisPort: 6379
 # -- Whether to handle k8s secrets with helm chart.
 setk8sSecrets: false
@@ -185,42 +185,64 @@ pvc:
   redisData:
     storageClass: ""
     storageRequest: 1Gi
-redis:
-  mispRedis:
-    containerSecurityContext:
-      allowPrivilegeEscalation: false
-      seccompProfile:
-        type: RuntimeDefault
-      runAsUser: 10001
-      capabilities:
-        drop:
-        - NET_RAW
-    image:
-      repository: valkey/valkey
-      tag: "7.2"
-      digest: ""
-    args: "--requirepass redispassword"
-    resources:
-      limits:
-        cpu: "0.5"
-        memory: 1Gi
-    containerLivenessProbe:
-      tcpSocket:
-        port: 6379
-      periodSeconds: 30
-      failureThreshold: 10
-    containerReadinessProbe:
-      tcpSocket:
-        port: 6379
-      periodSeconds: 20
-      failureThreshold: 5
-    imagePullPolicy: Always
-  ports:
-  - name: redis
+
+## Valkey helm chart values
+## See https://github.com/valkey-io/valkey-helm/tree/main/valkey for full configuration options
+valkey:
+  # -- Whether to have the helm chart handle deploying a valkey message queue. Enabled by default.
+  enabled: true
+  # -- Override the full name of resources
+  fullnameOverride: valkey
+  # -- Deploy a standalone (single-node) Valkey instance.
+  replica:
+    enabled: false
+
+  ## See https://github.com/valkey-io/valkey-helm/tree/main/valkey#authentication
+  # -- Authentication is disabled by default. To enable, set auth.enabled: true
+  auth:
+    enabled: true
+    aclUsers:
+      default:
+        permissions: "~* &* +@all"
+        password: "redispassword"  # checkov:skip=CKV_SECRET_6:Chart users should overwrite with an existing secret
+
+  # -- Persistent storage configuration (standalone deployment only). 8Gi by default.
+  dataStorage:
+    enabled: true
+    requestedSize: 8Gi
+    # -- Name of the storage class to use
+    className: ""
+
+  service:
+    # -- Type of Kubernetes service (ClusterIP, NodePort, LoadBalancer)
+    type: ClusterIP
+    # -- Port on which Valkey will be exposed
     port: 6379
-    targetPort: 6379
-  replicas: 1
-  type: ClusterIP
+
+  serviceAccount:
+    # -- Create a service account for Valkey
+    create: true
+    # -- Name of an existing service account to use (if create: false)
+    name: ""
+
+  # -- Resource limits/requests for the main Valkey container
+  resources:
+    limits:
+      cpu: "0.5"
+      memory: 1Gi
+  # -- Whether to mount additonal volumes to the valkey container.
+  extraVolumes: []
+  # - name: secrets-store-inline
+  #   csi:
+  #     driver: secrets-store.csi.k8s.io
+  #     readOnly: true
+  #     volumeAttributes:
+  #       secretProviderClass: example
+  extraVolumeMounts: []
+  # - name: secrets-store-inline
+  # mountPath: example
+  # readOnly: true
+
 tls:
   # -- Whether to have the helm chart handle TLS settings for the ingress.
   useTLS: false
