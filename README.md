@@ -37,6 +37,7 @@ MISP is an open source software solution for collecting, storing, distributing a
 | Repository | Name | Version |
 |------------|------|---------|
 | https://charts.ntppool.org/ | smtp | 2.4.0 |
+| oci://ghcr.io/valkey-io/valkey-helm | valkey | 0.9.4 |
 | oci://registry-1.docker.io/bitnamicharts | mariadb | 19.0.5 |
 
 ## Values
@@ -64,7 +65,7 @@ MISP is an open source software solution for collecting, storing, distributing a
 | env.oidcRolesMapping | string | `"{\"misp-admin\": \"1\",\"misp-org-admin\": \"2\",\"misp-sync-user\": \"5\",\"misp-publisher\": \"4\",\"misp-api-user\": \"User with API access\",\"misp-user\": \"3\"}"` | If user has multiple roles from OIDC provider, the first role that matches will be assigned to the user. |
 | env.oidcRolesProperty | string | `"roles"` |  |
 | env.oidcScopes | string | `""` | The location for adding custom scopes. |
-| env.redisHost | string | `"redis"` | The hostname of the redis service. |
+| env.redisHost | string | `"valkey"` | The hostname of the redis service. |
 | env.redisPassword | string | `"redispassword"` | The password for the redis service. |
 | env.redisPort | int | `6379` | The port for the redis service. |
 | env.securitySalt | string | `"E038741A-3646-4525-BFC9-77500D25F1F6"` |  |
@@ -144,7 +145,7 @@ MISP is an open source software solution for collecting, storing, distributing a
 | modules.ports[0].targetPort | int | `6666` |  |
 | modules.replicas | int | `1` |  |
 | modules.type | string | `"ClusterIP"` |  |
-| modulesEnv.redisBackend | string | `"redis"` |  |
+| modulesEnv.redisBackend | string | `"valkey"` |  |
 | modulesEnv.redisPort | int | `6379` |  |
 | mysqlCredentials | object | `{"password":"misp","username":"^M1SP+User$"}` | MySQL default credentials. Only used if setk8sSecrets is set to true. |
 | mysqlCredentialsSecretName | string | `"mysql-credentials"` | Kubernetes Secret Name for MySQL admin credentials. Secret has to contain `username` and `password` literals. |
@@ -154,28 +155,6 @@ MISP is an open source software solution for collecting, storing, distributing a
 | pvc.attachments.storageRequest | string | `"1Gi"` |  |
 | pvc.redisData.storageClass | string | `""` |  |
 | pvc.redisData.storageRequest | string | `"1Gi"` |  |
-| redis.mispRedis.args | string | `"--requirepass redispassword"` |  |
-| redis.mispRedis.containerLivenessProbe.failureThreshold | int | `10` |  |
-| redis.mispRedis.containerLivenessProbe.periodSeconds | int | `30` |  |
-| redis.mispRedis.containerLivenessProbe.tcpSocket.port | int | `6379` |  |
-| redis.mispRedis.containerReadinessProbe.failureThreshold | int | `5` |  |
-| redis.mispRedis.containerReadinessProbe.periodSeconds | int | `20` |  |
-| redis.mispRedis.containerReadinessProbe.tcpSocket.port | int | `6379` |  |
-| redis.mispRedis.containerSecurityContext.allowPrivilegeEscalation | bool | `false` |  |
-| redis.mispRedis.containerSecurityContext.capabilities.drop[0] | string | `"NET_RAW"` |  |
-| redis.mispRedis.containerSecurityContext.runAsUser | int | `10001` |  |
-| redis.mispRedis.containerSecurityContext.seccompProfile.type | string | `"RuntimeDefault"` |  |
-| redis.mispRedis.image.digest | string | `""` |  |
-| redis.mispRedis.image.repository | string | `"valkey/valkey"` |  |
-| redis.mispRedis.image.tag | string | `"7.2"` |  |
-| redis.mispRedis.imagePullPolicy | string | `"Always"` |  |
-| redis.mispRedis.resources.limits.cpu | string | `"0.5"` |  |
-| redis.mispRedis.resources.limits.memory | string | `"1Gi"` |  |
-| redis.ports[0].name | string | `"redis"` |  |
-| redis.ports[0].port | int | `6379` |  |
-| redis.ports[0].targetPort | int | `6379` |  |
-| redis.replicas | int | `1` |  |
-| redis.type | string | `"ClusterIP"` |  |
 | secretsStore.enabled | bool | `false` | Whether to have the helm chart handle settings for use with the Secrets Store CSI driver. Disabled by default. |
 | secretsStore.mountPath | string | `"/mnt/secrets-store"` |  |
 | secretsStore.secretProviderClassName | string | `""` |  |
@@ -186,6 +165,19 @@ MISP is an open source software solution for collecting, storing, distributing a
 | smtp.enabled | bool | `false` | Whether to have the helm chart handle deploying the optional mail forwarding container. |
 | tls.tlsSecretName | string | `"squirrel"` |  |
 | tls.useTLS | bool | `false` | Whether to have the helm chart handle TLS settings for the ingress. |
+| valkey.auth | object | `{"aclUsers":{"default":{"password":"redispassword","permissions":"~* &* +@all"}},"enabled":true}` | Authentication is enabled by default. To disable, set auth.enabled: true |
+| valkey.dataStorage | object | `{"className":"","enabled":true,"requestedSize":"8Gi"}` | Persistent storage configuration (standalone deployment only). 8Gi by default. |
+| valkey.dataStorage.className | string | `""` | Name of the storage class to use |
+| valkey.enabled | bool | `true` | Whether to have the helm chart handle deploying a valkey message queue. Enabled by default. |
+| valkey.extraVolumeMounts | list | `[]` | Whether to mount additonal volumes to the valkey container. |
+| valkey.extraVolumes | list | `[]` | Whether to add additonal volumes to the valkey container. |
+| valkey.fullnameOverride | string | `"valkey"` | Override the full name of resources |
+| valkey.replica | object | `{"enabled":false}` | Deploy a standalone (single-node) Valkey instance. |
+| valkey.resources | object | `{"limits":{"cpu":"0.5","memory":"1Gi"}}` | Resource limits/requests for the main Valkey container |
+| valkey.service.port | int | `6379` | Port on which Valkey will be exposed |
+| valkey.service.type | string | `"ClusterIP"` | Type of Kubernetes service (ClusterIP, NodePort, LoadBalancer) |
+| valkey.serviceAccount.create | bool | `true` | Create a service account for Valkey |
+| valkey.serviceAccount.name | string | `""` | Name of an existing service account to use (if create: false) |
 | workloadIdentity.enabled | bool | `false` | Whether to have the helm chart handle setting the Service Account for use with Azure AD workload Identity. Disabled by default. |
 | workloadIdentity.serviceAccountName | string | `""` |  |
 
