@@ -1,5 +1,7 @@
 directory:
   - .
+skip-path:
+  - charts  
 skip-check: 
   - CKV_GITLABCI*
   - CKV_GHA*

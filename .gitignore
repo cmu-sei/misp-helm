@@ -8,7 +8,6 @@ Chart.lock
 
 # Helm-related local config
 .values.yaml
-secrets.yaml
 .env
 .envrc
 
