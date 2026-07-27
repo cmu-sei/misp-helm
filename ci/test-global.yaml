@@ -1,0 +1,20 @@
+#  helm template test-misp . -f ci/test-global.yaml --show-only templates/deployment-misp.yaml
+global:
+  imageRegistry: myregistry.example.com
+  imagePullSecrets:
+    - my-secret
+commonAnnotations:
+  test-annotation: "value"
+commonLabels:
+  test-label: "value"
+extraVolumeMounts:
+  - name: secrets-store-inline
+    mountPath: /mnt/secrets-store
+    readOnly: true
+extraVolumes:
+  - name: secrets-store-inline
+    csi:
+      driver: secrets-store.csi.k8s.io
+      readOnly: true
+      volumeAttributes:
+        secretProviderClass: test
