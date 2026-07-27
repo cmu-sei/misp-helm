@@ -10,49 +10,31 @@
 # This Software includes and/or makes use of Third-Party Software each subject to its own license.
 # DM25-1432
 
-## @section Global parameters
-## Global Docker image parameters
-## Please, note that this will override the image parameters, including dependencies, configured to use the global value
-## Current available global Docker image parameters: imageRegistry, imagePullSecrets and storageClass
-##
-
-## @param global.imageRegistry Global Docker Image registry
-## @param global.imagePullSecrets Global Docker registry secret names as an array
-## @param global.defaultStorageClass Global default StorageClass for Persistent Volume(s)
-##
 global:
-  # The global image registry (this will override the registry of all container images defined in this chart)
+  # -- The global image registry (this will override the registry of all container images defined in this chart)
   imageRegistry: ""
-  # The global image pull secrets (list of secret names)
+  # -- The global image pull secrets (list of secret names)
   imagePullSecrets: []
 
-## @section Common parameters
-##
-
-## @param nameOverride String to partially override misp-charts.fullname
-##
+# -- String to partially override misp-charts.fullname
 nameOverride: ""
-## @param fullnameOverride String to fully override misp-charts.fullname
-##
+# -- String to fully override misp-charts.fullname
 fullnameOverride: ""
-## @param clusterDomain Default Kubernetes cluster domain
-##
+# -- Default Kubernetes cluster domain
 clusterDomain: cluster.local
-## @param commonAnnotations Common annotations to add to all MISP resources (sub-charts are not considered)
-##
+# -- Common annotations to add to all MISP resources (sub-charts are not considered)
 commonAnnotations: {}
-## @param commonLabels Common labels to add to all MISP resources (sub-charts are not considered)
-##
+# -- Common labels to add to all MISP resources (sub-charts are not considered)
 commonLabels: {}
 
 serviceAccount:
-  # Create a service account for misp
+  # -- Create a service account for misp
   create: true
-  # Whether to automount the service account token
+  # -- Whether to automount the service account token
   automount: false
-  # Annotations to add to the service account
+  # -- Annotations to add to the service account
   annotations: {}
-  # Name of an existing service account to use (if create: false)
+  # -- Name of an existing service account to use (if create: false)
   name: ""
 
 instanceEnv:
@@ -115,14 +97,14 @@ misp:
         - MKNOD
         - SETFCAP
     image:
-      # Image registry
+      # -- misp-core container image registry
       registry: ghcr.io
-      # misp-core container image repository
+      # -- misp-core container image repository
       repository: misp/misp-docker/misp-core
-      # Image pull policy (Always, IfNotPresent, Never)
+      # -- misp-core container image pull policy (Always, IfNotPresent, Never)
       pullPolicy: IfNotPresent
       tag: latest
-      # List of image pull secrets (for private registries)
+      # -- misp-core container list of image pull secrets (for private registries)
       imagePullSecrets: []
     resources:
       limits:
@@ -180,14 +162,14 @@ modules:
         - AUDIT_WRITE
         - SETFCAP
     image:
-      # Image registry
+      # -- misp-modules container image registry
       registry: ghcr.io
-      # misp-modules container image repository
+      # -- misp-modules container image repository
       repository: misp/misp-docker/misp-modules
-      # Image pull policy (Always, IfNotPresent, Never)
+      # -- misp-modules container image pull policy (Always, IfNotPresent, Never)
       pullPolicy: IfNotPresent
       tag: latest
-      # List of image pull secrets (for private registries)
+      # -- misp-modules container list of image pull secrets (for private registries)
       imagePullSecrets: []
     resources:
       limits:
@@ -241,12 +223,13 @@ pvc:
     storageClass: ""
     storageRequest: 1Gi
 
-# Optionally specify extra list of additional volumes
+# -- Optionally specify extra list of additional volumes
 extraVolumes: []
 #  - name: hostpath-volume
 #    hostPath:
 #      path: /opt/valkey/hostpath-volume/
 #      type: DirectoryOrCreate
+# -- Optionally specify extra list of additional volumeMounts
 extraVolumeMounts: []
 #  - mountPath: /some/path/
 #    name: hostpath-volume

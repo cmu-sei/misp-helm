@@ -46,6 +46,9 @@ MISP is an open source software solution for collecting, storing, distributing a
 |-----|------|---------|-------------|
 | apiKeyCredentials | object | `{"key":"kzcuoh9tujovgbgcjrgbyaop8msodti4p9vjxyhp"}` | Admin user API key. Only used if setAPIKey & setk8sSecrets is set to true. |
 | apiKeySecretValue | string | `"misp-api-key"` | Kubernetes Secret Name for MISP admin user api key. |
+| clusterDomain | string | `"cluster.local"` | Default Kubernetes cluster domain |
+| commonAnnotations | object | `{}` | Common annotations to add to all MISP resources (sub-charts are not considered) |
+| commonLabels | object | `{}` | Common labels to add to all MISP resources (sub-charts are not considered) |
 | env.disableSSLRedirect | string | `"true"` |  |
 | env.mispDebug | string | `"no"` |  |
 | env.mispEmail | string | `"info@sei.cmu.edu"` | Email used for notifications. |
@@ -70,10 +73,14 @@ MISP is an open source software solution for collecting, storing, distributing a
 | env.redisPort | int | `6379` | The port for the redis service. |
 | env.securitySalt | string | `"E038741A-3646-4525-BFC9-77500D25F1F6"` |  |
 | env.zeromqEnabled | string | `"yes"` |  |
+| extraVolumeMounts | list | `[]` | Optionally specify extra list of additional volumeMounts |
+| extraVolumes | list | `[]` | Optionally specify extra list of additional volumes |
+| fullnameOverride | string | `""` | String to fully override misp-charts.fullname |
+| global.imagePullSecrets | list | `[]` | The global image pull secrets (list of secret names) |
+| global.imageRegistry | string | `""` | The global image registry (this will override the registry of all container images defined in this chart) |
 | instanceEnv.ingressHostName | string | `"localhost"` |  |
 | instanceEnv.mispBaseurl | string | `"http://localhost:80"` | If you are exposing MISP on a non-standard port (i.e., the port is part of the URL you would use to access it, e.g., https://192.168.0.1:4433) you need to include the port in the variable |
 | instanceEnv.mispUuid | string | `"8370cb21-4e96-48d4-b43a-c14b97022f7e"` |  |
-| kubernetesClusterDomain | string | `"cluster.local"` |  |
 | mariadb.auth.database | string | `"misp"` |  |
 | mariadb.auth.password | string | `"misp"` |  |
 | mariadb.auth.rootPassword | string | `"misp"` |  |
@@ -107,10 +114,11 @@ MISP is an open source software solution for collecting, storing, distributing a
 | misp.misp.containerStartupProbe.initialDelaySeconds | int | `10` |  |
 | misp.misp.containerStartupProbe.periodSeconds | int | `10` |  |
 | misp.misp.containerStartupProbe.timeoutSeconds | int | `5` |  |
-| misp.misp.image.digest | string | `""` |  |
-| misp.misp.image.repository | string | `"ghcr.io/misp/misp-docker/misp-core"` |  |
+| misp.misp.image.imagePullSecrets | list | `[]` | misp-core container list of image pull secrets (for private registries) |
+| misp.misp.image.pullPolicy | string | `"IfNotPresent"` | misp-core container image pull policy (Always, IfNotPresent, Never) |
+| misp.misp.image.registry | string | `"ghcr.io"` | misp-core container image registry |
+| misp.misp.image.repository | string | `"misp/misp-docker/misp-core"` | misp-core container image repository |
 | misp.misp.image.tag | string | `"latest"` |  |
-| misp.misp.imagePullPolicy | string | `"Always"` |  |
 | misp.misp.resources.limits.cpu | string | `"0.5"` |  |
 | misp.misp.resources.limits.memory | string | `"1Gi"` |  |
 | misp.ports[0].name | string | `"misp"` |  |
@@ -134,10 +142,11 @@ MISP is an open source software solution for collecting, storing, distributing a
 | modules.mispModules.containerSecurityContext.capabilities.drop[5] | string | `"SETFCAP"` |  |
 | modules.mispModules.containerSecurityContext.runAsUser | int | `10001` |  |
 | modules.mispModules.containerSecurityContext.seccompProfile.type | string | `"RuntimeDefault"` |  |
-| modules.mispModules.image.digest | string | `""` |  |
-| modules.mispModules.image.repository | string | `"ghcr.io/misp/misp-docker/misp-modules"` |  |
+| modules.mispModules.image.imagePullSecrets | list | `[]` | misp-modules container list of image pull secrets (for private registries) |
+| modules.mispModules.image.pullPolicy | string | `"IfNotPresent"` | misp-modules container image pull policy (Always, IfNotPresent, Never) |
+| modules.mispModules.image.registry | string | `"ghcr.io"` | misp-modules container image registry |
+| modules.mispModules.image.repository | string | `"misp/misp-docker/misp-modules"` | misp-modules container image repository |
 | modules.mispModules.image.tag | string | `"latest"` |  |
-| modules.mispModules.imagePullPolicy | string | `"Always"` |  |
 | modules.mispModules.resources.limits.cpu | string | `"0.5"` |  |
 | modules.mispModules.resources.limits.memory | string | `"1Gi"` |  |
 | modules.ports[0].name | string | `"misp-modules"` |  |
@@ -149,15 +158,17 @@ MISP is an open source software solution for collecting, storing, distributing a
 | modulesEnv.redisPort | int | `6379` |  |
 | mysqlCredentials | object | `{"password":"misp","username":"^M1SP+User$"}` | MySQL default credentials. Only used if setk8sSecrets is set to true. |
 | mysqlCredentialsSecretName | string | `"mysql-credentials"` | Kubernetes Secret Name for MySQL admin credentials. Secret has to contain `username` and `password` literals. |
+| nameOverride | string | `""` | String to partially override misp-charts.fullname |
 | oidcCredentials | object | `{"password":"test","username":"test"}` | OIDC default credentials. Only used if setk8sSecrets is set to true. |
 | oidcCredentialsSecretName | string | `"oidc-credentials"` | Kubernetes Secret Name for OIDC credentials. Secret has to contain `username` and `password` literals. |
 | pvc.attachments.storageClass | string | `""` |  |
 | pvc.attachments.storageRequest | string | `"1Gi"` |  |
 | pvc.redisData.storageClass | string | `""` |  |
 | pvc.redisData.storageRequest | string | `"1Gi"` |  |
-| secretsStore.enabled | bool | `false` | Whether to have the helm chart handle settings for use with the Secrets Store CSI driver. Disabled by default. |
-| secretsStore.mountPath | string | `"/mnt/secrets-store"` |  |
-| secretsStore.secretProviderClassName | string | `""` |  |
+| serviceAccount.annotations | object | `{}` | Annotations to add to the service account |
+| serviceAccount.automount | bool | `false` | Whether to automount the service account token |
+| serviceAccount.create | bool | `true` | Create a service account for misp |
+| serviceAccount.name | string | `""` | Name of an existing service account to use (if create: false) |
 | setAPIKey | bool | `true` | Whether to handle setting the MISP admin API key automatically. |
 | setk8sSecrets | bool | `false` | Whether to handle k8s secrets with helm chart. |
 | smtp.RELAY_NETWORKS | string | `":10.42.0.0/17"` |  |
@@ -178,6 +189,4 @@ MISP is an open source software solution for collecting, storing, distributing a
 | valkey.service.type | string | `"ClusterIP"` | Type of Kubernetes service (ClusterIP, NodePort, LoadBalancer) |
 | valkey.serviceAccount.create | bool | `true` | Create a service account for Valkey |
 | valkey.serviceAccount.name | string | `""` | Name of an existing service account to use (if create: false) |
-| workloadIdentity.enabled | bool | `false` | Whether to have the helm chart handle setting the Service Account for use with Azure AD workload Identity. Disabled by default. |
-| workloadIdentity.serviceAccountName | string | `""` |  |
 
