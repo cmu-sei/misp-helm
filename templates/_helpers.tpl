@@ -40,6 +40,9 @@ helm.sh/chart: {{ include "misp-charts.chart" . }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
+{{- with .Values.commonLabels }}
+{{- toYaml . | nindent 0 }}
+{{- end }}
 {{- end }}
 
 {{/*
@@ -60,3 +63,78 @@ Create the name of the service account to use
 {{- default "default" .Values.serviceAccount.name }}
 {{- end }}
 {{- end }}
+
+{{/*
+Returns the misp-core container image
+*/}}
+{{- define "misp-charts.misp.misp.image" -}}
+{{- include "common.image" (dict "image" (dict "registry" .Values.misp.misp.image.registry "repository" .Values.misp.misp.image.repository "tag" (.Values.misp.misp.image.tag | default .Chart.AppVersion)) "global" .Values.global) }}
+{{- end -}}
+
+{{/*
+Returns the misp-modules container image
+*/}}
+{{- define "misp-charts.modules.mispModules.image" -}}
+{{- include "common.image" (dict "image" (dict "registry" .Values.modules.mispModules.image.registry "repository" .Values.modules.mispModules.image.repository "tag" (.Values.modules.mispModules.image.tag | default .Chart.AppVersion)) "global" .Values.global) }}
+{{- end -}}
+
+{{/*
+The common image function that renders the container image
+*/}}
+{{- define "common.image" -}}
+{{- $registryName := .image.registry }}
+{{- $repositoryName := .image.repository }}
+{{- $tag := .image.tag }}
+{{- if .global }}
+  {{- if .global.imageRegistry }}
+    {{- $registryName = .global.imageRegistry }}
+  {{- end }}
+{{- end }}
+{{- if $registryName }}
+{{- printf "%s/%s:%s" $registryName $repositoryName $tag }}
+{{- else }}
+{{- printf "%s:%s" $repositoryName $tag }}
+{{ end }}
+{{- end -}}
+
+{{/*
+Returns the misp-core image pull secrets
+*/}}
+{{- define "misp-charts.misp.misp.image.imagePullSecrets" -}}
+{{- $pullSecrets := list }}
+{{- if .Values.global }}
+  {{- range .Values.global.imagePullSecrets -}}
+    {{- $pullSecrets = append $pullSecrets . -}}
+  {{- end -}}
+{{- end -}}
+{{- range .Values.misp.misp.image.imagePullSecrets -}}
+    {{- $pullSecrets = append $pullSecrets . -}}
+{{- end -}}
+{{- if (not (empty $pullSecrets)) }}
+imagePullSecrets:
+{{- range $pullSecrets }}
+- name: {{ . }}
+{{- end }}
+{{- end }}
+{{- end -}}
+
+{{/*
+Returns the misp-modules image pull secrets
+*/}}
+{{- define "misp-charts.modules.mispModules.image.imagePullSecrets" -}}
+{{- $pullSecrets := list }}
+{{- if .Values.global }}
+  {{- range .Values.global.imagePullSecrets -}}
+    {{- $pullSecrets = append $pullSecrets . -}}
+  {{- end -}}
+{{- end -}}
+{{- range .Values.modules.mispModules.image.imagePullSecrets -}}
+    {{- $pullSecrets = append $pullSecrets . -}}
+{{- end -}}
+{{- if (not (empty $pullSecrets)) }}
+imagePullSecrets:
+{{- range $pullSecrets }}
+- name: {{ . }}
+{{- end }}
+{{- end }}
+{{- end -}}
