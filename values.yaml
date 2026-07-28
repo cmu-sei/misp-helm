@@ -102,7 +102,7 @@ misp:
       # -- misp-core container image repository
       repository: misp/misp-docker/misp-core
       # -- misp-core container image pull policy (Always, IfNotPresent, Never)
-      pullPolicy: IfNotPresent
+      pullPolicy: Always
       tag: latest
       # -- misp-core container list of image pull secrets (for private registries)
       imagePullSecrets: []
@@ -167,7 +167,7 @@ modules:
       # -- misp-modules container image repository
       repository: misp/misp-docker/misp-modules
       # -- misp-modules container image pull policy (Always, IfNotPresent, Never)
-      pullPolicy: IfNotPresent
+      pullPolicy: Always
       tag: latest
       # -- misp-modules container list of image pull secrets (for private registries)
       imagePullSecrets: []
