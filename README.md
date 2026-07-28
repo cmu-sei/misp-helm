@@ -115,7 +115,7 @@ MISP is an open source software solution for collecting, storing, distributing a
 | misp.misp.containerStartupProbe.periodSeconds | int | `10` |  |
 | misp.misp.containerStartupProbe.timeoutSeconds | int | `5` |  |
 | misp.misp.image.imagePullSecrets | list | `[]` | misp-core container list of image pull secrets (for private registries) |
-| misp.misp.image.pullPolicy | string | `"IfNotPresent"` | misp-core container image pull policy (Always, IfNotPresent, Never) |
+| misp.misp.image.pullPolicy | string | `"Always"` | misp-core container image pull policy (Always, IfNotPresent, Never) |
 | misp.misp.image.registry | string | `"ghcr.io"` | misp-core container image registry |
 | misp.misp.image.repository | string | `"misp/misp-docker/misp-core"` | misp-core container image repository |
 | misp.misp.image.tag | string | `"latest"` |  |
@@ -143,7 +143,7 @@ MISP is an open source software solution for collecting, storing, distributing a
 | modules.mispModules.containerSecurityContext.runAsUser | int | `10001` |  |
 | modules.mispModules.containerSecurityContext.seccompProfile.type | string | `"RuntimeDefault"` |  |
 | modules.mispModules.image.imagePullSecrets | list | `[]` | misp-modules container list of image pull secrets (for private registries) |
-| modules.mispModules.image.pullPolicy | string | `"IfNotPresent"` | misp-modules container image pull policy (Always, IfNotPresent, Never) |
+| modules.mispModules.image.pullPolicy | string | `"Always"` | misp-modules container image pull policy (Always, IfNotPresent, Never) |
 | modules.mispModules.image.registry | string | `"ghcr.io"` | misp-modules container image registry |
 | modules.mispModules.image.repository | string | `"misp/misp-docker/misp-modules"` | misp-modules container image repository |
 | modules.mispModules.image.tag | string | `"latest"` |  |
