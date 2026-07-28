@@ -22,8 +22,8 @@ maintainers:
   - name: sei-mfrank
     email: mfrank@sei.cmu.edu
 type: application
-version: 3.0.0
-appVersion: "2.5.23"
+version: 4.0.0
+appVersion: "2.5.44"
 
 dependencies:
   - name: mariadb
