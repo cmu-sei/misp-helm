@@ -9,6 +9,34 @@
 # Please see Copyright #notice for non-US Government use and distribution.
 # This Software includes and/or makes use of Third-Party Software each subject to its own license.
 # DM25-1432
+
+global:
+  # -- The global image registry (this will override the registry of all container images defined in this chart)
+  imageRegistry: ""
+  # -- The global image pull secrets (list of secret names)
+  imagePullSecrets: []
+
+# -- String to partially override misp-charts.fullname
+nameOverride: ""
+# -- String to fully override misp-charts.fullname
+fullnameOverride: ""
+# -- Default Kubernetes cluster domain
+clusterDomain: cluster.local
+# -- Common annotations to add to all MISP resources (sub-charts are not considered)
+commonAnnotations: {}
+# -- Common labels to add to all MISP resources (sub-charts are not considered)
+commonLabels: {}
+
+serviceAccount:
+  # -- Create a service account for misp
+  create: true
+  # -- Whether to automount the service account token
+  automount: false
+  # -- Annotations to add to the service account
+  annotations: {}
+  # -- Name of an existing service account to use (if create: false)
+  name: ""
+
 instanceEnv:
   # -- If you are exposing MISP on a non-standard port (i.e., the port is part of the URL you would use to access it, e.g., https://192.168.0.1:4433) you need to include the port in the variable
   mispBaseurl: http://localhost:80   # This is the value you need to modify if you are experiencing issues with redirects when port-forwarding a pod
@@ -56,7 +84,6 @@ env:
   securitySalt: E038741A-3646-4525-BFC9-77500D25F1F6
   zeromqEnabled: "yes"
   disableSSLRedirect: "true"
-kubernetesClusterDomain: cluster.local
 misp:
   misp:
     containerSecurityContext:
@@ -70,9 +97,15 @@ misp:
         - MKNOD
         - SETFCAP
     image:
-      repository: ghcr.io/misp/misp-docker/misp-core
+      # -- misp-core container image registry
+      registry: ghcr.io
+      # -- misp-core container image repository
+      repository: misp/misp-docker/misp-core
+      # -- misp-core container image pull policy (Always, IfNotPresent, Never)
+      pullPolicy: Always
       tag: latest
-      digest: ""
+      # -- misp-core container list of image pull secrets (for private registries)
+      imagePullSecrets: []
     resources:
       limits:
         cpu: "0.5"
@@ -97,7 +130,6 @@ misp:
         port: 80
       periodSeconds: 10
       failureThreshold: 3
-    imagePullPolicy: Always
   ports:
   - name: misp
     port: 80
@@ -130,9 +162,15 @@ modules:
         - AUDIT_WRITE
         - SETFCAP
     image:
-      repository: ghcr.io/misp/misp-docker/misp-modules
+      # -- misp-modules container image registry
+      registry: ghcr.io
+      # -- misp-modules container image repository
+      repository: misp/misp-docker/misp-modules
+      # -- misp-modules container image pull policy (Always, IfNotPresent, Never)
+      pullPolicy: Always
       tag: latest
-      digest: ""
+      # -- misp-modules container list of image pull secrets (for private registries)
+      imagePullSecrets: []
     resources:
       limits:
         cpu: "0.5"
@@ -147,7 +185,6 @@ modules:
         port: 6666
       periodSeconds: 10
       failureThreshold: 3
-    imagePullPolicy: Always
   ports:
   - name: misp-modules
     port: 6666
@@ -185,6 +222,17 @@ pvc:
   redisData:
     storageClass: ""
     storageRequest: 1Gi
+
+# -- Optionally specify extra list of additional volumes
+extraVolumes: []
+#  - name: hostpath-volume
+#    hostPath:
+#      path: /opt/valkey/hostpath-volume/
+#      type: DirectoryOrCreate
+# -- Optionally specify extra list of additional volumeMounts
+extraVolumeMounts: []
+#  - mountPath: /some/path/
+#    name: hostpath-volume
 
 ## Valkey helm chart values
 ## See https://github.com/valkey-io/valkey-helm/tree/main/valkey for full configuration options
@@ -278,14 +326,3 @@ smtp:
 
   # colon separated, must start with : !
   RELAY_NETWORKS: :10.42.0.0/17
-
-workloadIdentity:
-  # -- Whether to have the helm chart handle setting the Service Account for use with Azure AD workload Identity. Disabled by default.
-  enabled: false
-  serviceAccountName: ""
-
-secretsStore:
-# -- Whether to have the helm chart handle settings for use with the Secrets Store CSI driver. Disabled by default.
-  enabled: false
-  secretProviderClassName: ""
-  mountPath: "/mnt/secrets-store"

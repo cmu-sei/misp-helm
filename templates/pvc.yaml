@@ -15,6 +15,10 @@ metadata:
   name: {{ include "misp-charts.fullname" . }}-attachments
   labels:
   {{- include "misp-charts.labels" . | nindent 4 }}
+  {{- with .Values.commonAnnotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
 spec:
   accessModes:
   - ReadWriteOnce
@@ -31,6 +35,10 @@ metadata:
   name: {{ include "misp-charts.fullname" . }}-redis-data
   labels:
   {{- include "misp-charts.labels" . | nindent 4 }}
+  {{- with .Values.commonAnnotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
 spec:
   accessModes:
   - ReadWriteOnce

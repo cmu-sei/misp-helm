@@ -15,6 +15,10 @@ metadata:
   name: misp
   labels:
   {{- include "misp-charts.labels" . | nindent 4 }}
+  {{- with .Values.commonAnnotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
 spec:
   type: {{ .Values.misp.type }}
   selector:

@@ -16,6 +16,10 @@ metadata:
   labels:
     app: misp-modules
   {{- include "misp-charts.labels" . | nindent 4 }}
+  {{- with .Values.commonAnnotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
 spec:
   replicas: {{ .Values.modules.replicas }}
   selector:
@@ -27,44 +31,43 @@ spec:
       labels:
         app: misp-modules
       {{- include "misp-charts.selectorLabels" . | nindent 8 }}
-    spec:
-      {{- if and .Values.workloadIdentity .Values.workloadIdentity.enabled }}
-      serviceAccountName: {{ .Values.workloadIdentity.serviceAccountName | quote }}
+      {{- with .Values.commonLabels }}
+      {{- toYaml . | nindent 8 }}
       {{- end }}
+      annotations:
+        {{- with .Values.commonAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- (include "misp-charts.modules.mispModules.image.imagePullSecrets" .) | indent 6 }}
+      automountServiceAccountToken: {{ .Values.serviceAccount.automount }}
+      serviceAccountName: {{ include "misp-charts.serviceAccountName" . }}
       containers:
       - env:
         - name: KUBERNETES_CLUSTER_DOMAIN
-          value: {{ quote .Values.kubernetesClusterDomain }}
+          value: {{ quote .Values.clusterDomain }}
         envFrom:
         - configMapRef:
             name: {{ include "misp-charts.fullname" . }}-modules-env
-        image: {{- if not .Values.modules.mispModules.image.digest }}
-          {{ .Values.modules.mispModules.image.repository }}:{{ .Values.modules.mispModules.image.tag
-          | default .Chart.AppVersion }}
-          {{- else }}
-          {{ .Values.modules.mispModules.image.repository }}@{{ .Values.modules.mispModules.image.digest }}
-          {{- end }}
+        image: {{ include "misp-charts.modules.mispModules.image" . }}
         name: misp-modules
         resources: {{- toYaml .Values.modules.mispModules.resources | nindent 10 }}
-        imagePullPolicy: {{ .Values.modules.mispModules.imagePullPolicy }}
+        imagePullPolicy: {{ .Values.modules.mispModules.image.pullPolicy }}
         securityContext: {{- toYaml .Values.modules.mispModules.containerSecurityContext
           | nindent 10 }}
         livenessProbe: {{- toYaml .Values.modules.mispModules.containerLivenessProbe | nindent 10 }}
         readinessProbe: {{- toYaml .Values.modules.mispModules.containerReadinessProbe | nindent 10 }}
-        {{- if and .Values.secretsStore .Values.secretsStore.enabled }}
+        {{- if .Values.extraVolumeMounts}}
         volumeMounts:
-        - name: secrets-store-inline
-          mountPath: {{ .Values.secretsStore.mountPath | quote }}
-          readOnly: true
+          {{- with .Values.extraVolumeMounts }}
+          {{- toYaml . | nindent 8 }}
+          {{- end }}
         {{- end }}
-      {{- if and .Values.secretsStore .Values.secretsStore.enabled }}
+      {{- if .Values.extraVolumes }}
       volumes:
-      - name: secrets-store-inline
-        csi:
-          driver: secrets-store.csi.k8s.io
-          readOnly: true
-          volumeAttributes:
-            secretProviderClass: {{ .Values.secretsStore.secretProviderClassName | quote }}
+        {{- with .Values.extraVolumes }}
+        {{- toYaml . | nindent 6 }}
+        {{- end }}
       {{- end }}
       restartPolicy: Always
 ---

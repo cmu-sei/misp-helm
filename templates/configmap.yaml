@@ -15,6 +15,10 @@ metadata:
   name: {{ include "misp-charts.fullname" . }}-env
   labels:
   {{- include "misp-charts.labels" . | nindent 4 }}
+  {{- with .Values.commonAnnotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
 data:
   DISABLE_SSL_REDIRECT: {{ .Values.env.disableSSLRedirect | quote }}
   BASE_URL: {{ .Values.instanceEnv.mispBaseurl | quote }}
@@ -49,6 +53,10 @@ metadata:
   name: {{ include "misp-charts.fullname" . }}-modules-env
   labels:
   {{- include "misp-charts.labels" . | nindent 4 }}
+  {{- with .Values.commonAnnotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
 data:
   REDIS_BACKEND: {{ .Values.modulesEnv.redisBackend | quote }}
   REDIS_PORT: {{ .Values.modulesEnv.redisPort | quote }}
@@ -61,6 +69,10 @@ metadata:
   name: {{ include "misp-charts.fullname" . }}-customize-misp
   labels:
   {{- include "misp-charts.labels" . | nindent 4 }}
+  {{- with .Values.commonAnnotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
 data:
   customize_misp.sh: |
    #!/bin/bash

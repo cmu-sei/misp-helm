@@ -16,6 +16,10 @@ metadata:
   labels:
     app: misp
   {{- include "misp-charts.labels" . | nindent 4 }}
+  {{- with .Values.commonAnnotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
 spec:
   replicas: {{ .Values.misp.replicas }}
   selector:
@@ -27,10 +31,17 @@ spec:
       labels:
         app: misp
       {{- include "misp-charts.selectorLabels" . | nindent 8 }}
-    spec:
-      {{- if and .Values.workloadIdentity .Values.workloadIdentity.enabled }}
-      serviceAccountName: {{ .Values.workloadIdentity.serviceAccountName | quote }}
+      {{- with .Values.commonLabels }}
+      {{- toYaml . | nindent 8 }}
       {{- end }}
+      annotations:
+        {{- with .Values.commonAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- (include "misp-charts.misp.misp.image.imagePullSecrets" .) | indent 6 }}
+      automountServiceAccountToken: {{ .Values.serviceAccount.automount }}
+      serviceAccountName: {{ include "misp-charts.serviceAccountName" . }}
       containers:
       - env:
         - name: MYSQL_USER
@@ -61,21 +72,16 @@ spec:
               name: {{ .Values.apiKeySecretValue}}
         {{- end }}
         - name: KUBERNETES_CLUSTER_DOMAIN
-          value: {{ quote .Values.kubernetesClusterDomain }}
+          value: {{ quote .Values.clusterDomain }}
         envFrom:
         - configMapRef:
             name: {{ include "misp-charts.fullname" . }}-env
-        image: {{- if not .Values.misp.misp.image.digest }}
-          {{ .Values.misp.misp.image.repository }}:{{ .Values.misp.misp.image.tag
-          | default .Chart.AppVersion }}
-          {{- else }}
-          {{ .Values.misp.misp.image.repository }}@{{ .Values.misp.misp.image.digest }}
-          {{- end }}
+        image: {{ include "misp-charts.misp.misp.image" . }}
         name: misp
         ports:
         - containerPort: 8080
         resources: {{- toYaml .Values.misp.misp.resources | nindent 10 }}
-        imagePullPolicy: {{ .Values.misp.misp.imagePullPolicy }}
+        imagePullPolicy: {{ .Values.misp.misp.image.pullPolicy }}
         securityContext: {{- toYaml .Values.misp.misp.containerSecurityContext | nindent 10 }}
         livenessProbe: {{- toYaml .Values.misp.misp.containerLivenessProbe | nindent 10 }}
         startupProbe: {{- toYaml .Values.misp.misp.containerStartupProbe | nindent 10 }}
@@ -90,20 +96,13 @@ spec:
           mountPath: /custom/files/customize_misp.sh
           subPath: customize_misp.sh
       {{- end}}
-      {{- if and .Values.secretsStore .Values.secretsStore.enabled }}
-        - name: secrets-store-inline
-          mountPath: {{ default "/mnt/secrets-store" .Values.secretsStore.mountPath | quote }}
-          readOnly: true
-      {{- end }}
+        {{- with .Values.extraVolumeMounts }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
       restartPolicy: Always
       volumes:
-      {{- if and .Values.secretsStore .Values.secretsStore.enabled }}
-      - name: secrets-store-inline
-        csi:
-          driver: secrets-store.csi.k8s.io
-          readOnly: true
-          volumeAttributes:
-            secretProviderClass: {{ .Values.secretsStore.secretProviderClassName | quote }}
+      {{- with .Values.extraVolumes }}
+      {{- toYaml . | nindent 6 }}
       {{- end }}
       - name: misp-attachments
         persistentVolumeClaim:
