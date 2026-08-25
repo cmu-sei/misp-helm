@@ -72,4 +72,4 @@ jobs:
         uses: helm/kind-action@v1.12.0
 
       - name: Run chart-testing (install)
-        run: ct install --namespace misp     
+        run: ct install --charts ./ --namespace misp     
