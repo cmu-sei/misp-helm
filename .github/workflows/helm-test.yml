@@ -76,4 +76,4 @@ jobs:
         uses: helm/kind-action@v1.12.0
 
       - name: Run chart-testing (install)
-        run: ct install --charts ./ 
+        run: ct install --helm-extra-args "--timeout 15m" --charts ./ 
