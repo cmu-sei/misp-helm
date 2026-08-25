@@ -130,13 +130,17 @@ misp:
         port: 80
       periodSeconds: 10
       failureThreshold: 3
-  ports:
-  - name: misp
+  # -- Service settings for misp-core
+  service:
+    # -- Supported types: ClusterIP, NodePort, LoadBalancer
+    type: ClusterIP
     port: 80
-    targetPort: 80
-    protocol: TCP
+    # -- target port will be set to port if not set
+    targetPort: ""
+    # -- nodePort is optional and only used when service.type is NodePort or LoadBalancer
+    nodePort: ""
   replicas: 1
-  type: ClusterIP
+  # -- Kubernetes Ingress Settings
   ingress:
     # -- Whether to enable Kubernetes Ingress for external access
     enabled: true
@@ -145,6 +149,37 @@ misp:
      # -- Annotations for the ingress resource
     annotations:
       kubernetes.io/ingress.class: "nginx"
+  # Ref: https://gateway-api.sigs.k8s.io/api-types/httproute/
+  # -- Gateway API HTTPRoute configuration
+  httproute:
+    # -- Enable HTTPRoute resource (Gateway API)
+    enabled: false
+    # -- namespace to deploy httproute in. Chart will not create the namespace.
+    namespace: ""
+    # -- Gateway API parentRefs for the HTTPRoute
+    # Must reference an existing Gateway resource
+    parentRefs: []
+      # - name: example-gateway
+      #   namespace: example-gateway-namespace
+      #   sectionName: https
+    # -- List of hostnames for the HTTPRoute
+    hostnames: []
+      # - misp.example.com
+    # -- HTTPRoute rules configuration
+    rules:
+      - matches:
+          - path:
+              type: PathPrefix
+              value: /
+        # filters: []
+        #   - type: RequestHeaderModifier
+        #     requestHeaderModifier:
+        #       add:
+        #         - name: X-Custom-Header
+        #           value: custom-value
+        # timeouts:
+        #   request: 10s
+        #   backendRequest: 2s
 
 modules:
   mispModules:

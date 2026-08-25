@@ -20,9 +20,15 @@ metadata:
     {{- toYaml . | nindent 4 }}
   {{- end }}
 spec:
-  type: {{ .Values.misp.type }}
+  type: {{ .Values.misp.service.type }}
   selector:
     app: misp
   {{- include "misp-charts.selectorLabels" . | nindent 4 }}
   ports:
-  {{- .Values.misp.ports | toYaml | nindent 2 }}
+    - port: {{ .Values.misp.service.port }}
+      targetPort: {{ .Values.misp.service.targetPort | default .Values.misp.service.port }}
+      {{- if and (or (eq .Values.misp.service.type "NodePort") (eq .Values.misp.service.type "LoadBalancer")) (not (empty .Values.misp.service.nodePort)) }}
+      nodePort: {{ .Values.misp.service.nodePort }}
+      {{- end }}
+      protocol: TCP
+      name: http

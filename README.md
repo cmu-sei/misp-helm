@@ -91,6 +91,13 @@ MISP is an open source software solution for collecting, storing, distributing a
 | mariadb.image.tag | string | `"latest"` |  |
 | mariadb.volumePermissions.enabled | bool | `true` |  |
 | mariadb.volumePermissions.image.repository | string | `"bitnamilegacy/os-shell"` |  |
+| misp.httproute | object | `{"enabled":false,"hostnames":[],"namespace":"","parentRefs":[],"rules":[{"matches":[{"path":{"type":"PathPrefix","value":"/"}}]}]}` | Gateway API HTTPRoute configuration |
+| misp.httproute.enabled | bool | `false` | Enable HTTPRoute resource (Gateway API) |
+| misp.httproute.hostnames | list | `[]` | List of hostnames for the HTTPRoute |
+| misp.httproute.namespace | string | `""` | namespace to deploy httproute in. Chart will not create the namespace. |
+| misp.httproute.parentRefs | list | `[]` | Gateway API parentRefs for the HTTPRoute Must reference an existing Gateway resource |
+| misp.httproute.rules | list | `[{"matches":[{"path":{"type":"PathPrefix","value":"/"}}]}]` | HTTPRoute rules configuration |
+| misp.ingress | object | `{"annotations":{"kubernetes.io/ingress.class":"nginx"},"className":"nginx","enabled":true}` | Kubernetes Ingress Settings |
 | misp.ingress.annotations | object | `{"kubernetes.io/ingress.class":"nginx"}` | Annotations for the ingress resource |
 | misp.ingress.className | string | `"nginx"` | Ingress Class name |
 | misp.ingress.enabled | bool | `true` | Whether to enable Kubernetes Ingress for external access |
@@ -121,12 +128,11 @@ MISP is an open source software solution for collecting, storing, distributing a
 | misp.misp.image.tag | string | `"latest"` |  |
 | misp.misp.resources.limits.cpu | string | `"0.5"` |  |
 | misp.misp.resources.limits.memory | string | `"1Gi"` |  |
-| misp.ports[0].name | string | `"misp"` |  |
-| misp.ports[0].port | int | `80` |  |
-| misp.ports[0].protocol | string | `"TCP"` |  |
-| misp.ports[0].targetPort | int | `80` |  |
 | misp.replicas | int | `1` |  |
-| misp.type | string | `"ClusterIP"` |  |
+| misp.service | object | `{"nodePort":"","port":80,"targetPort":"","type":"ClusterIP"}` | Service settings for misp-core |
+| misp.service.nodePort | string | `""` | nodePort is optional and only used when service.type is NodePort or LoadBalancer |
+| misp.service.targetPort | string | `""` | target port will be set to port if not set |
+| misp.service.type | string | `"ClusterIP"` | Supported types: ClusterIP, NodePort, LoadBalancer |
 | modules.mispModules.containerLivenessProbe.failureThreshold | int | `5` |  |
 | modules.mispModules.containerLivenessProbe.periodSeconds | int | `20` |  |
 | modules.mispModules.containerLivenessProbe.tcpSocket.port | int | `6666` |  |
