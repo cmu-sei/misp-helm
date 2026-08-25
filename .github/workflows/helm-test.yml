@@ -75,6 +75,13 @@ jobs:
       - name: Create kind cluster
         uses: helm/kind-action@v1.12.0
 
+      - name: Check cluster
+        run: |
+          kubectl get nodes -o wide
+          kubectl get pods -A
+          kubectl get pvc -A
+          kubectl get storageclass
+
       - name: Debug chart-testing
         run: |
           ct version
@@ -83,4 +90,13 @@ jobs:
           find "$CT_CONFIG_DIR" -type f -maxdepth 3 -print
 
       - name: Run chart-testing (install)
-        run: ct install --charts ./ 
+        run: ct install --debug --charts ./ --skip-clean-up
+        
+      - name: Debug cluster after failure
+        if: failure()
+        run: |
+          kubectl get pods -n misp -o wide
+          kubectl get pvc -n misp
+          kubectl get statefulsets -n misp
+          kubectl get deployments -n misp
+          kubectl get events -n misp --sort-by=.lastTimestamp
