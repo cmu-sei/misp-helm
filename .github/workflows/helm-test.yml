@@ -90,8 +90,10 @@ jobs:
           find "$CT_CONFIG_DIR" -type f -maxdepth 3 -print
 
       - name: Run chart-testing (install)
-        run: ct install --debug --charts ./ --skip-clean-up
-        
+        run: |
+          kubectl create ns misp
+          ct install --debug --charts ./ --skip-clean-up --namespace misp
+
       - name: Debug cluster after failure
         if: failure()
         run: |
