@@ -169,8 +169,6 @@ MISP is an open source software solution for collecting, storing, distributing a
 | oidcCredentialsSecretName | string | `"oidc-credentials"` | Kubernetes Secret Name for OIDC credentials. Secret has to contain `username` and `password` literals. |
 | pvc.attachments.storageClass | string | `""` |  |
 | pvc.attachments.storageRequest | string | `"1Gi"` |  |
-| pvc.redisData.storageClass | string | `""` |  |
-| pvc.redisData.storageRequest | string | `"1Gi"` |  |
 | serviceAccount.annotations | object | `{}` | Annotations to add to the service account |
 | serviceAccount.automount | bool | `false` | Whether to automount the service account token |
 | serviceAccount.create | bool | `true` | Create a service account for misp |
