@@ -75,20 +75,6 @@ jobs:
       - name: Create kind cluster
         uses: helm/kind-action@v1.12.0
 
-      - name: Check cluster
-        run: |
-          kubectl get nodes -o wide
-          kubectl get pods -A
-          kubectl get pvc -A
-          kubectl get storageclass
-
-      - name: Debug chart-testing
-        run: |
-          ct version
-          which ct
-          echo "CT_CONFIG_DIR=$CT_CONFIG_DIR"
-          find "$CT_CONFIG_DIR" -type f -maxdepth 3 -print
-
       - name: Run chart-testing (install)
         run: |
           kubectl create ns misp
