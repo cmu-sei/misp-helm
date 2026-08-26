@@ -1,6 +1,10 @@
 name: Lint and Test Charts
 
-on: [push,pull_request]
+on:
+  pull_request:
+  push:
+    branches:
+      - main
 
 jobs:
   lint-test:
@@ -72,4 +76,15 @@ jobs:
         uses: helm/kind-action@v1.12.0
 
       - name: Run chart-testing (install)
-        run: ct install --namespace misp     
+        run: |
+          kubectl create ns misp
+          ct install --debug --charts ./ --skip-clean-up --namespace misp
+
+      - name: Debug cluster after failure
+        if: failure()
+        run: |
+          kubectl get pods -n misp -o wide
+          kubectl get pvc -n misp
+          kubectl get statefulsets -n misp
+          kubectl get deployments -n misp
+          kubectl get events -n misp --sort-by=.lastTimestamp

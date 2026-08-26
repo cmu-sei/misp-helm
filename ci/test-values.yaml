@@ -11,6 +11,12 @@
 # DM25-1432
 mariadb:
   enabled: true
+  primary:
+    persistence:
+      enabled: false
 setk8sSecrets: true
 instanceEnv:
   mispBaseurl: http://localhost:8080
+valkey:
+  dataStorage:
+    enabled: false

@@ -41,7 +41,7 @@ test:
 	kubectl delete --ignore-not-found ns misp
 	@echo "$(GREEN)========== [2/2] Testing if installable ==========$(RESET)"
 	kubectl create ns misp
-	ct install --skip-clean-up --namespace misp
+	ct install --debug --skip-clean-up --namespace misp
 
 test-upgrade:
 	@echo "$(RED)========== UPGRADING ==========$(RESET)"
