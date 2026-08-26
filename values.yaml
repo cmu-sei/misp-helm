@@ -254,9 +254,6 @@ pvc:
   attachments:
     storageClass: ""
     storageRequest: 1Gi
-  redisData:
-    storageClass: ""
-    storageRequest: 1Gi
 
 # -- Optionally specify extra list of additional volumes
 extraVolumes: []

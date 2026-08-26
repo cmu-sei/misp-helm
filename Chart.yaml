@@ -22,7 +22,7 @@ maintainers:
   - name: sei-mfrank
     email: mfrank@sei.cmu.edu
 type: application
-version: 5.0.0
+version: 5.0.1
 appVersion: "2.5.44"
 
 dependencies:

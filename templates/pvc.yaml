@@ -28,23 +28,3 @@ spec:
   {{- if not (empty .Values.pvc.attachments.storageClass) }}
   storageClassName: {{ .Values.pvc.attachments.storageClass | quote }}
   {{- end }}
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: {{ include "misp-charts.fullname" . }}-redis-data
-  labels:
-  {{- include "misp-charts.labels" . | nindent 4 }}
-  {{- with .Values.commonAnnotations }}
-  annotations:
-    {{- toYaml . | nindent 4 }}
-  {{- end }}
-spec:
-  accessModes:
-  - ReadWriteOnce
-  resources:
-    requests:
-      storage: {{ .Values.pvc.redisData.storageRequest | quote }}
-  {{- if not (empty .Values.pvc.redisData.storageClass) }}
-  storageClassName: {{ .Values.pvc.redisData.storageClass | quote }}
-  {{- end }}
